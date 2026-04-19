@@ -2,14 +2,14 @@
   "version": 2,
   "builds": [
     {
-      "src": "noteflow.html",
+      "src": "tack.html",
       "use": "@vercel/static"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "/noteflow.html"
+      "dest": "/tack.html"
     }
   ]
 }
