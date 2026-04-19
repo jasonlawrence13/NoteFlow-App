@@ -173,14 +173,18 @@ input[type="date"]::-webkit-calendar-picker-indicator{opacity:0.5;}
 
 /* Modals */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;z-index:200;padding:20px;}
+.overlay-fullscreen{position:fixed;inset:0;background:#fff;z-index:200;display:flex;flex-direction:column;animation:slideUp 0.22s ease;}
 .modal{background:#fff;border:1px solid var(--border);border-radius:18px;width:100%;max-width:680px;max-height:92vh;overflow-y:auto;box-shadow:0 32px 80px rgba(0,0,0,0.18);animation:slideUp 0.22s ease;}
 .modal-sm{max-width:480px;}
 .modal-md{max-width:560px;}
-.modal-header{padding:20px 24px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;}
+.modal-fullscreen{background:#fff;width:100%;height:100%;display:flex;flex-direction:column;overflow:hidden;}
+.modal-header{padding:20px 24px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;flex-shrink:0;}
 .modal-title{font-family:var(--font-head);font-size:20px;color:var(--text);}
 .modal-sub{color:var(--text3);font-size:13px;margin-top:2px;font-family:var(--font-mono);}
 .modal-body{padding:20px 24px;}
-.modal-footer{padding:0 24px 20px;display:flex;justify-content:flex-end;gap:10px;}
+.modal-body-fullscreen{padding:20px 24px;flex:1;overflow-y:auto;display:flex;flex-direction:column;}
+.modal-footer{padding:0 24px 20px;display:flex;justify-content:flex-end;gap:10px;flex-shrink:0;}
+.modal-footer-fullscreen{padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;flex-shrink:0;background:#fff;}
 .modal-close{background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text2);width:34px;height:34px;font-size:15px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 
 /* Form */
@@ -268,8 +272,8 @@ input[type="date"]::-webkit-calendar-picker-indicator{opacity:0.5;}
 <script type="text/babel">
 
 // ── PASTE YOUR SUPABASE CREDENTIALS HERE ──
-const SUPABASE_URL      = "https://vlxapdrxehcrtwsisdee.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZseGFwZHJ4ZWhjcnR3c2lzZGVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1Mjk4NDksImV4cCI6MjA5MjEwNTg0OX0._bhnZxX9m0QRfg2BE_y5Sg1XX3SXcl3eyFXIbZnAdLw";
+const SUPABASE_URL      = "YOUR_SUPABASE_URL";
+const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
 // ──────────────────────────────────────────
 
 const { createClient } = supabase;
@@ -551,36 +555,102 @@ function NoteModal({initial,folders,onSave,onClose,myName}){
   const isEdit=!!initial?.id;
   const nFU=()=>({id:Date.now().toString()+Math.random(),item:"",person:"",deadline:"",done:false});
   const [form,setForm]=useState(initial?{...initial,follow_ups:[...(initial.follow_ups||[])]}:{date:todayStr(),people:"",topic:"",body:"",category:folders[0]?.id||"",follow_ups:[]});
+  const [showFU,setShowFU]=useState((initial?.follow_ups||[]).length>0);
   const bodyRef=useRef(null);
   useEffect(()=>{setTimeout(()=>{if(bodyRef.current)bodyRef.current.focus();},100);},[]);
   const sf=(k,v)=>setForm(f=>({...f,[k]:v}));
-  const addFU=()=>setForm(f=>({...f,follow_ups:[...f.follow_ups,nFU()]}));
+  const addFU=()=>{setShowFU(true);setForm(f=>({...f,follow_ups:[...f.follow_ups,nFU()]}));};
   const updFU=(idx,k,v)=>setForm(f=>({...f,follow_ups:f.follow_ups.map((fu,i)=>i===idx?{...fu,[k]:v}:fu)}));
   const remFU=idx=>setForm(f=>({...f,follow_ups:f.follow_ups.filter((_,i)=>i!==idx)}));
   const ok=form.body.trim()||form.topic.trim();
   return (
-    <div className="overlay" onClick={e=>e.target===e.currentTarget&&onClose()}>
-      <div className="modal">
+    <div className="overlay-fullscreen">
+      <div className="modal-fullscreen">
+
+        {/* ── Full-screen header ── */}
         <div className="modal-header">
-          <div><div className="modal-title">{isEdit?"Edit Note":"New Note"}</div><div className="modal-sub">{isEdit?`Created ${fmtDate((form.created_at||"").slice(0,10))}`:"All fields optional except notes or topic"}</div></div>
-          <button className="modal-close" onClick={onClose}>✕</button>
-        </div>
-        <div className="modal-body">
-          <div className="form-row">
-            <div className="form-field flex1"><label className="field-label">📅 Date</label><input type="date" className="field-input" value={form.date||""} onChange={e=>sf("date",e.target.value)}/></div>
-            <div className="form-field flex2"><label className="field-label">👤 People Involved</label><input className="field-input" value={form.people||""} onChange={e=>sf("people",e.target.value)} placeholder="e.g. Sarah Chen, Mike Torres…"/></div>
+          <div style={{display:"flex",alignItems:"center",gap:14}}>
+            <button onClick={onClose} style={{background:"none",border:"none",color:"var(--accent)",fontSize:15,fontWeight:700,padding:"4px 0",display:"flex",alignItems:"center",gap:5}}>
+              ← Cancel
+            </button>
+            <div style={{width:1,height:20,background:"var(--border)"}}/>
+            <div>
+              <div className="modal-title">{isEdit?"Edit Note":"New Note"}</div>
+            </div>
           </div>
-          <div className="form-field"><label className="field-label">💬 Topic of Discussion</label><input className="field-input" value={form.topic||""} onChange={e=>sf("topic",e.target.value)} placeholder="e.g. Q3 Budget Review…"/></div>
-          <div className="form-field"><label className="field-label">📝 Notes</label><textarea ref={bodyRef} className="field-textarea" value={form.body||""} onChange={e=>sf("body",e.target.value)} placeholder="Write your notes here… (Apple Pencil Scribble or keyboard)"/></div>
-          <div style={{marginBottom:18}}>
-            <div className="fu-header"><label className="field-label" style={{marginBottom:0}}>✅ Follow-ups & To-Dos</label><button className="fu-add-btn" onClick={addFU}>+ Add Item</button></div>
-            {form.follow_ups.length===0?<div className="fu-empty">Tap "+ Add Item" to log follow-up actions and assign deadlines</div>:form.follow_ups.map((fu,idx)=><FURow key={fu.id} fu={fu} idx={idx} onChange={updFU} onRemove={remFU}/>)}
-          </div>
-          <div className="form-field" style={{marginBottom:0}}><label className="field-label">📁 Assign to Folder</label><div className="cat-pills">{folders.map(cat=><CatPill key={cat.id} cat={cat} selected={form.category===cat.id} onClick={()=>sf("category",cat.id)}/>)}</div></div>
+          <button
+            className="btn-primary"
+            onClick={()=>ok&&onSave({...form,follow_ups:form.follow_ups.filter(fu=>fu.item.trim())})}
+            disabled={!ok}
+            style={{opacity:ok?1:0.4,cursor:ok?"pointer":"not-allowed",padding:"10px 24px"}}>
+            {isEdit?"Save Changes":"Save Note"}
+          </button>
         </div>
-        <div className="modal-footer">
-          <button className="btn-secondary" onClick={onClose}>Cancel</button>
-          <button className="btn-primary" onClick={()=>ok&&onSave({...form,follow_ups:form.follow_ups.filter(fu=>fu.item.trim())})} style={{opacity:ok?1:0.4,cursor:ok?"pointer":"not-allowed"}}>{isEdit?"Save Changes →":"Save Note →"}</button>
+
+        {/* ── Scrollable body ── */}
+        <div className="modal-body-fullscreen">
+
+          {/* Top meta row — compact, side by side */}
+          <div style={{display:"flex",gap:12,marginBottom:14,flexShrink:0}}>
+            <div style={{flex:1}}>
+              <label className="field-label">📅 Date</label>
+              <input type="date" className="field-input" value={form.date||""} onChange={e=>sf("date",e.target.value)}/>
+            </div>
+            <div style={{flex:2}}>
+              <label className="field-label">👤 People Involved</label>
+              <input className="field-input" value={form.people||""} onChange={e=>sf("people",e.target.value)} placeholder="e.g. Sarah Chen, Mike Torres…"/>
+            </div>
+          </div>
+
+          {/* Topic */}
+          <div style={{marginBottom:14,flexShrink:0}}>
+            <label className="field-label">💬 Topic of Discussion</label>
+            <input className="field-input" value={form.topic||""} onChange={e=>sf("topic",e.target.value)} placeholder="e.g. Q3 Budget Review, Product Roadmap…"/>
+          </div>
+
+          {/* Folder assignment - compact pills */}
+          <div style={{marginBottom:14,flexShrink:0}}>
+            <label className="field-label">📁 Folder</label>
+            <div className="cat-pills">
+              {folders.map(cat=><CatPill key={cat.id} cat={cat} selected={form.category===cat.id} onClick={()=>sf("category",cat.id)}/>)}
+            </div>
+          </div>
+
+          {/* ── NOTES — takes all remaining space ── */}
+          <div style={{flex:1,display:"flex",flexDirection:"column",minHeight:0,marginBottom:14}}>
+            <label className="field-label">📝 Notes</label>
+            <textarea
+              ref={bodyRef}
+              className="field-textarea"
+              value={form.body||""}
+              onChange={e=>sf("body",e.target.value)}
+              placeholder="Write your notes here… tap and start writing or use Apple Pencil Scribble"
+              style={{
+                flex:1,
+                minHeight:320,
+                fontSize:18,
+                lineHeight:2,
+                padding:"18px",
+                borderRadius:14,
+                border:"1.5px solid var(--border2)",
+                background:"#fafbff",
+              }}
+            />
+          </div>
+
+          {/* ── Follow-ups section ── */}
+          <div style={{flexShrink:0,marginBottom:8}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:showFU?10:0}}>
+              <label className="field-label" style={{marginBottom:0}}>✅ Follow-ups & To-Dos</label>
+              <button className="fu-add-btn" onClick={addFU}>+ Add Item</button>
+            </div>
+            {showFU&&(
+              form.follow_ups.length===0
+                ?<div className="fu-empty">Tap "+ Add Item" to log follow-up actions</div>
+                :form.follow_ups.map((fu,idx)=><FURow key={fu.id} fu={fu} idx={idx} onChange={updFU} onRemove={remFU}/>)
+            )}
+          </div>
+
         </div>
       </div>
     </div>
