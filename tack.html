@@ -1,0 +1,1315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="apple-mobile-web-app-title" content="Tack"/>
+<title>Tack</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;0,900;1,400&family=Lora:ital,wght@0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#ffffff;--bg2:#f7f8fa;--bg3:#eef0f4;--bg4:#e4e7ed;
+  --border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.13);
+  --text:#1a1d24;--text2:rgba(26,29,36,0.6);--text3:rgba(26,29,36,0.38);
+  --accent:#3b7cff;--accent2:#6c4ff7;--green:#1dac6e;
+  --red:#e03e3e;--orange:#d97706;--yellow:#b45309;
+  --sidebar-w:270px;--radius:14px;--radius-sm:10px;
+  --font:'Lato',sans-serif;--font-head:'Lora',serif;--font-mono:'JetBrains Mono',monospace;
+  --shadow:0 1px 4px rgba(0,0,0,0.07),0 4px 16px rgba(0,0,0,0.05);
+  --shadow-lg:0 8px 32px rgba(0,0,0,0.11);
+  --shadow-xl:0 20px 60px rgba(0,0,0,0.15);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body,#root{height:100%;width:100%;overflow:hidden;}
+body{background:var(--bg);font-family:var(--font);color:var(--text);font-size:16px;}
+input,textarea,select{font-family:var(--font);font-size:16px;outline:none;color:var(--text);}
+button{font-family:var(--font);cursor:pointer;transition:all 0.15s;-webkit-appearance:none;}
+button:active{transform:scale(0.97);}
+textarea{resize:none;}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.12);border-radius:4px;}
+input[type="date"]::-webkit-calendar-picker-indicator{opacity:0.5;}
+
+.app{display:flex;height:100vh;width:100vw;overflow:hidden;}
+
+/* ── AUTH SCREENS ── */
+.auth-wrap{
+  width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#f0f4ff 0%,#fafafa 50%,#f5f0ff 100%);
+  padding:20px;
+}
+.auth-card{
+  background:#fff;border:1px solid var(--border);border-radius:20px;
+  padding:40px;width:100%;max-width:440px;
+  box-shadow:var(--shadow-xl);animation:slideUp 0.25s ease;
+}
+.auth-logo{display:flex;align-items:center;gap:12px;margin-bottom:32px;}
+.auth-logo-icon{flex-shrink:0;}
+.auth-logo-text{}
+.auth-logo-name{font-family:var(--font-head);font-size:26px;font-weight:700;color:var(--text);letter-spacing:-1px;line-height:1;}
+.auth-logo-tag{font-family:var(--font-mono);font-size:9px;color:var(--accent);letter-spacing:2.5px;margin-top:3px;}
+.auth-logo-desc{font-family:var(--font-head);font-size:10px;color:var(--text);font-style:italic;margin-top:2px;opacity:0.55;}
+.auth-title{font-family:var(--font-head);font-size:22px;color:var(--text);margin-bottom:6px;}
+.auth-sub{color:var(--text3);font-size:14px;margin-bottom:28px;line-height:1.5;}
+.auth-step-indicator{display:flex;gap:8px;margin-bottom:28px;}
+.auth-step{height:4px;border-radius:2px;flex:1;background:var(--bg3);transition:background 0.3s;}
+.auth-step.active{background:var(--accent);}
+.auth-step.done{background:var(--green);}
+.auth-field{margin-bottom:16px;}
+.auth-label{font-family:var(--font-mono);font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:7px;display:block;}
+.auth-input{width:100%;background:var(--bg2);border:1.5px solid var(--border2);border-radius:var(--radius-sm);padding:14px 16px;font-size:16px;color:var(--text);transition:border-color 0.15s;}
+.auth-input:focus{border-color:var(--accent);background:#fff;}
+.auth-input::placeholder{color:var(--text3);}
+.auth-btn{width:100%;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:var(--radius-sm);color:#fff;font-size:16px;font-weight:700;padding:15px;margin-top:8px;box-shadow:0 4px 16px rgba(59,124,255,0.3);}
+.auth-btn:disabled{opacity:0.45;cursor:not-allowed;}
+.auth-link{background:none;border:none;color:var(--accent);font-size:14px;text-decoration:underline;padding:0;}
+.auth-footer{text-align:center;margin-top:20px;color:var(--text3);font-size:14px;display:flex;align-items:center;justify-content:center;gap:6px;}
+.auth-error{background:rgba(224,62,62,0.08);border:1px solid rgba(224,62,62,0.25);border-radius:var(--radius-sm);padding:11px 14px;color:var(--red);font-size:14px;margin-bottom:16px;}
+.auth-success{background:rgba(29,172,110,0.08);border:1px solid rgba(29,172,110,0.25);border-radius:var(--radius-sm);padding:11px 14px;color:var(--green);font-size:14px;margin-bottom:16px;}
+
+/* Pending screen */
+.pending-wrap{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--bg2);padding:20px;}
+.pending-card{background:#fff;border:1px solid var(--border);border-radius:20px;padding:48px 40px;max-width:420px;width:100%;text-align:center;box-shadow:var(--shadow-xl);}
+.pending-icon{font-size:52px;margin-bottom:20px;}
+.pending-title{font-family:var(--font-head);font-size:24px;color:var(--text);margin-bottom:10px;}
+.pending-sub{color:var(--text2);font-size:15px;line-height:1.6;margin-bottom:24px;}
+
+/* Folder picker in signup */
+.folder-picker{display:flex;flex-direction:column;gap:8px;max-height:260px;overflow-y:auto;}
+.folder-pick-row{display:flex;align-items:center;gap:12px;padding:11px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;transition:all 0.15s;}
+.folder-pick-row.selected{border-color:var(--accent);background:rgba(59,124,255,0.06);}
+.folder-pick-check{width:20px;height:20px;border-radius:5px;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.15s;}
+.folder-pick-row.selected .folder-pick-check{background:var(--accent);border-color:var(--accent);color:#fff;font-size:12px;}
+
+/* ── MAIN APP ── */
+.sidebar{width:var(--sidebar-w);min-width:var(--sidebar-w);background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+.sidebar-top{padding:20px 18px 16px;border-bottom:1px solid var(--border);}
+.tack-logo{display:flex;align-items:center;gap:12px;}
+.tack-name{font-family:var(--font-head);font-size:26px;font-weight:700;color:var(--text);letter-spacing:-1px;line-height:1;}
+.tack-tagline{font-family:var(--font-mono);font-size:9px;color:var(--accent);letter-spacing:2px;margin-top:3px;}
+.tack-descriptor{font-family:var(--font-head);font-size:10px;color:var(--text);font-style:italic;margin-top:2px;opacity:0.55;}
+.sidebar-nav{flex:1;overflow-y:auto;padding:12px 10px;display:flex;flex-direction:column;gap:2px;}
+.section-row{display:flex;align-items:center;justify-content:space-between;padding:10px 10px 4px;}
+.section-label{font-family:var(--font-mono);font-size:9px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;}
+.add-btn{background:none;border:none;color:var(--accent);font-size:20px;padding:0 4px;line-height:1;}
+.nav-btn{width:100%;background:transparent;border:none;border-radius:var(--radius-sm);padding:11px 12px;color:var(--text2);font-size:15px;font-weight:400;display:flex;align-items:center;gap:8px;text-align:left;}
+.nav-btn:hover{background:rgba(0,0,0,0.04);color:var(--text);}
+.nav-btn span:last-child{margin-left:auto;font-size:12px;font-weight:700;border-radius:20px;padding:2px 8px;background:rgba(0,0,0,0.06);color:var(--text2);}
+.folder-row{display:flex;align-items:center;border-radius:var(--radius-sm);transition:background 0.15s;position:relative;}
+.folder-row:hover{background:rgba(0,0,0,0.04);}
+.folder-row:hover .folder-acts{opacity:1;}
+.folder-row.active{background:rgba(59,124,255,0.08);}
+.folder-main{flex:1;display:flex;align-items:center;gap:8px;padding:11px 12px;cursor:pointer;min-width:0;}
+.folder-name{flex:1;font-size:15px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.folder-row.active .folder-name{font-weight:700;}
+.folder-badge{font-size:12px;font-weight:700;border-radius:20px;padding:2px 8px;background:rgba(0,0,0,0.06);color:var(--text2);white-space:nowrap;flex-shrink:0;}
+.folder-acts{opacity:0;display:flex;gap:2px;padding-right:8px;transition:opacity 0.15s;}
+.fol-btn{background:none;border:none;font-size:13px;padding:4px 6px;border-radius:6px;color:var(--text3);}
+.fol-btn:hover{background:rgba(0,0,0,0.08);color:var(--text2);}
+.fol-btn.del:hover{color:var(--red);}
+.sidebar-bottom{padding:12px 10px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:6px;}
+.user-box{display:flex;align-items:center;gap:10px;padding:11px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);}
+.user-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;}
+.user-name{flex:1;font-size:13px;font-weight:700;color:var(--text);min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.user-company{font-size:11px;color:var(--text3);font-family:var(--font-mono);}
+.user-menu-btn{background:none;border:none;color:var(--text3);font-size:16px;padding:0;}
+.cloud-badge{background:rgba(29,172,110,0.07);border:1px solid rgba(29,172,110,0.18);border-radius:var(--radius-sm);padding:8px 12px;}
+.cloud-title{color:var(--green);font-family:var(--font-mono);font-size:10px;font-weight:700;}
+.cloud-sub{color:var(--text3);font-family:var(--font-mono);font-size:10px;margin-top:2px;}
+
+/* ── MAIN CONTENT ── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+.topbar{padding:16px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-shrink:0;}
+.topbar-title{font-family:var(--font-head);font-size:22px;color:var(--text);flex:1;}
+.topbar-sub{color:var(--text3);font-size:13px;margin-top:1px;}
+.search-wrap{display:flex;align-items:center;gap:8px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:10px 14px;min-width:200px;}
+.search-wrap input{background:transparent;border:none;color:var(--text);font-size:15px;width:100%;}
+.search-wrap input::placeholder{color:var(--text3);}
+
+/* Buttons */
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:var(--radius-sm);color:#fff;font-size:15px;font-weight:700;padding:11px 20px;display:flex;align-items:center;gap:8px;box-shadow:0 4px 16px rgba(59,124,255,0.25);white-space:nowrap;}
+.btn-secondary{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text2);font-size:15px;padding:11px 18px;}
+.btn-danger{background:linear-gradient(135deg,#c0392b,#e74c3c);border:none;border-radius:var(--radius-sm);color:#fff;font-size:15px;font-weight:700;padding:11px 20px;}
+.btn-ghost{background:none;border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text2);font-size:14px;padding:8px 14px;}
+.btn-filter{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text2);font-size:15px;padding:11px 16px;display:flex;align-items:center;gap:8px;}
+.btn-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);flex-shrink:0;}
+.btn-icon:hover{background:var(--bg3);}
+.btn-icon.edit{background:rgba(59,124,255,0.08);border-color:rgba(59,124,255,0.2);color:var(--accent);}
+.btn-icon.del{background:rgba(224,62,62,0.06);border-color:rgba(224,62,62,0.18);color:rgba(224,62,62,0.7);}
+.btn-icon.share{background:rgba(29,172,110,0.08);border-color:rgba(29,172,110,0.2);color:var(--green);}
+
+/* Notes */
+.notes-list{flex:1;overflow-y:auto;padding:16px 24px;display:flex;flex-direction:column;gap:10px;}
+.note-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);transition:box-shadow 0.2s;}
+.note-card:hover{box-shadow:var(--shadow-lg);}
+.note-card.shared-card{border-color:rgba(29,172,110,0.25);}
+.note-summary{padding:15px 17px;cursor:pointer;display:flex;align-items:flex-start;gap:11px;}
+.note-chevron{color:var(--text3);font-size:11px;margin-top:5px;flex-shrink:0;transition:transform 0.2s;}
+.note-chevron.open{transform:rotate(90deg);}
+.note-meta{flex:1;min-width:0;}
+.note-tags{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:6px;}
+.tag{font-size:11px;font-weight:700;border-radius:6px;padding:3px 9px;font-family:var(--font-mono);}
+.note-topic{color:var(--text);font-size:17px;font-weight:700;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.note-preview{color:var(--text3);font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.note-actions{display:flex;gap:6px;flex-shrink:0;}
+.note-body{border-top:1px solid var(--border);padding:16px 18px;background:var(--bg2);}
+.note-body-label{font-family:var(--font-mono);font-size:9px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;}
+.note-body-text{color:rgba(26,29,36,0.85);font-size:16px;line-height:1.8;white-space:pre-wrap;}
+.note-footer{color:var(--text3);font-size:11px;font-family:var(--font-mono);margin-top:12px;padding-top:10px;border-top:1px solid var(--border);}
+.move-panel{padding:11px 17px;border-top:1px solid var(--border);display:flex;gap:7px;flex-wrap:wrap;align-items:center;background:var(--bg2);}
+
+/* Follow-ups */
+.fu-badge{display:flex;align-items:center;gap:10px;padding:11px 13px;border-radius:var(--radius-sm);margin-bottom:7px;flex-wrap:wrap;}
+.fu-check{width:22px;height:22px;border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;border:2px solid;cursor:pointer;background:transparent;}
+.fu-text{flex:1;font-size:15px;line-height:1.4;}
+.fu-person{font-size:13px;border-radius:6px;padding:3px 10px;white-space:nowrap;}
+.fu-deadline{font-size:12px;font-family:var(--font-mono);border-radius:6px;padding:3px 10px;white-space:nowrap;}
+
+/* Modals */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;z-index:200;padding:20px;}
+.modal{background:#fff;border:1px solid var(--border);border-radius:18px;width:100%;max-width:680px;max-height:92vh;overflow-y:auto;box-shadow:0 32px 80px rgba(0,0,0,0.18);animation:slideUp 0.22s ease;}
+.modal-sm{max-width:480px;}
+.modal-md{max-width:560px;}
+.modal-header{padding:20px 24px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;}
+.modal-title{font-family:var(--font-head);font-size:20px;color:var(--text);}
+.modal-sub{color:var(--text3);font-size:13px;margin-top:2px;font-family:var(--font-mono);}
+.modal-body{padding:20px 24px;}
+.modal-footer{padding:0 24px 20px;display:flex;justify-content:flex-end;gap:10px;}
+.modal-close{background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text2);width:34px;height:34px;font-size:15px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+
+/* Form */
+.form-row{display:flex;gap:14px;margin-bottom:16px;}
+.form-field{margin-bottom:16px;}
+.form-field.flex1{flex:1;margin-bottom:0;}
+.form-field.flex2{flex:2;margin-bottom:0;}
+.field-label{font-family:var(--font-mono);font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:7px;display:block;}
+.field-input{width:100%;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:13px 15px;font-size:16px;color:var(--text);transition:border-color 0.15s;}
+.field-input:focus{border-color:var(--accent);background:#fff;}
+.field-input::placeholder{color:var(--text3);}
+.field-textarea{width:100%;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:15px;font-size:16px;color:var(--text);line-height:1.8;min-height:200px;transition:border-color 0.15s;}
+.field-textarea:focus{border-color:var(--accent);background:#fff;}
+.field-textarea::placeholder{color:var(--text3);}
+.cat-pills{display:flex;gap:8px;flex-wrap:wrap;}
+.cat-pill{border-radius:24px;padding:8px 16px;font-size:14px;border:1.5px solid;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all 0.15s;white-space:nowrap;}
+.fu-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.fu-add-btn{background:rgba(29,172,110,0.1);border:1px solid rgba(29,172,110,0.25);border-radius:var(--radius-sm);color:var(--green);font-size:14px;font-weight:700;padding:7px 14px;}
+.fu-empty{border:1.5px dashed var(--border2);border-radius:var(--radius-sm);padding:18px;text-align:center;color:var(--text3);font-size:14px;}
+.fu-row{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:8px;display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap;}
+
+/* Color/icon pickers */
+.color-swatches{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+.color-swatch{width:28px;height:28px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:all 0.15s;flex-shrink:0;}
+.color-swatch.sel{border-color:var(--text);transform:scale(1.15);}
+.icon-picker{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px;}
+.icon-opt{width:36px;height:36px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg2);cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;}
+.icon-opt.sel{border-color:var(--accent);background:rgba(59,124,255,0.1);}
+
+/* Account settings panel */
+.settings-panel{flex:1;overflow-y:auto;padding:20px 24px;}
+.settings-section{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;margin-bottom:16px;box-shadow:var(--shadow);}
+.settings-section-title{font-family:var(--font-head);font-size:17px;color:var(--text);margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border);}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);}
+.settings-row:last-child{border-bottom:none;padding-bottom:0;}
+.settings-row-label{font-size:14px;font-weight:700;color:var(--text);}
+.settings-row-value{font-size:14px;color:var(--text2);}
+.settings-edit-btn{background:rgba(59,124,255,0.08);border:1px solid rgba(59,124,255,0.2);border-radius:8px;color:var(--accent);font-size:13px;font-weight:700;padding:6px 14px;}
+
+/* Admin panel */
+.admin-table{width:100%;border-collapse:collapse;}
+.admin-table th{font-family:var(--font-mono);font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;padding:10px 14px;border-bottom:1px solid var(--border);text-align:left;}
+.admin-table td{padding:12px 14px;border-bottom:1px solid var(--border);font-size:14px;color:var(--text);}
+.admin-table tr:last-child td{border-bottom:none;}
+.status-badge{font-size:11px;font-weight:700;border-radius:6px;padding:3px 9px;font-family:var(--font-mono);}
+.status-badge.approved{background:rgba(29,172,110,0.1);color:var(--green);}
+.status-badge.pending{background:rgba(180,83,9,0.1);color:var(--yellow);}
+.approve-btn{background:rgba(29,172,110,0.1);border:1px solid rgba(29,172,110,0.25);border-radius:8px;color:var(--green);font-size:13px;font-weight:700;padding:5px 13px;}
+.revoke-btn{background:rgba(224,62,62,0.08);border:1px solid rgba(224,62,62,0.2);border-radius:8px;color:var(--red);font-size:13px;font-weight:700;padding:5px 13px;}
+.invite-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+.invite-link{flex:1;font-family:var(--font-mono);font-size:12px;color:var(--text2);word-break:break-all;}
+.copy-btn{background:var(--accent);border:none;border-radius:8px;color:#fff;font-size:13px;font-weight:700;padding:7px 14px;white-space:nowrap;}
+
+/* Share modal */
+.user-search-result{display:flex;align-items:center;gap:10px;padding:11px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;transition:all 0.15s;}
+.user-search-result:hover{border-color:var(--accent);background:rgba(59,124,255,0.04);}
+.user-result-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;}
+.shared-with-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);}
+.shared-with-row:last-child{border-bottom:none;}
+
+/* Empty state */
+.empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--text3);gap:10px;}
+
+/* Toast */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:rgba(29,172,110,0.95);color:#fff;border-radius:var(--radius-sm);padding:11px 22px;font-size:15px;font-weight:700;z-index:400;box-shadow:0 4px 20px rgba(29,172,110,0.35);display:flex;align-items:center;gap:7px;pointer-events:none;animation:toastAnim 2.5s ease forwards;}
+
+/* Delete preview */
+.delete-preview{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;margin:12px 0;}
+
+/* Dropdown menu */
+.dropdown{position:absolute;bottom:56px;left:10px;right:10px;background:#fff;border:1px solid var(--border);border-radius:var(--radius-sm);box-shadow:var(--shadow-lg);z-index:100;overflow:hidden;animation:slideUp 0.15s ease;}
+.dropdown-item{width:100%;background:none;border:none;padding:12px 16px;text-align:left;font-size:14px;color:var(--text);display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);}
+.dropdown-item:last-child{border-bottom:none;}
+.dropdown-item:hover{background:var(--bg2);}
+.dropdown-item.danger{color:var(--red);}
+
+@keyframes slideUp{from{opacity:0;transform:translateY(22px);}to{opacity:1;transform:translateY(0);}}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+@keyframes toastAnim{0%{opacity:0;transform:translateX(-50%) translateY(10px);}15%{opacity:1;transform:translateX(-50%) translateY(0);}80%{opacity:1;}100%{opacity:0;transform:translateX(-50%) translateY(-8px);}}
+.fade-in{animation:fadeIn 0.18s ease;}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+
+// ── PASTE YOUR SUPABASE CREDENTIALS HERE ──
+const SUPABASE_URL      = "https://vlxapdrxehcrtwsisdee.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZseGFwZHJ4ZWhjcnR3c2lzZGVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1Mjk4NDksImV4cCI6MjA5MjEwNTg0OX0._bhnZxX9m0QRfg2BE_y5Sg1XX3SXcl3eyFXIbZnAdLw";
+// ──────────────────────────────────────────
+
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const { useState, useRef, useEffect, useCallback } = React;
+
+const FOLDER_COLORS=["#3b7cff","#ff6b4e","#a05cfc","#1dac6e","#d97706","#e91e8c","#00bcd4","#795548","#607d8b","#e91e63"];
+const FOLDER_ICONS=["👥","🤝","💡","✅","🔍","🌿","📊","🏆","💼","📋","🎯","🔔","📁","⚡","🌟","📌","🗂","💬","🏗","📈"];
+const DEFAULT_FOLDER_OPTIONS=[
+  {id:"meetings",label:"Meetings",color:"#3b7cff",icon:"👥"},
+  {id:"clients", label:"Clients", color:"#ff6b4e",icon:"🤝"},
+  {id:"ideas",   label:"Ideas",   color:"#a05cfc",icon:"💡"},
+  {id:"tasks",   label:"Tasks",   color:"#1dac6e",icon:"✅"},
+  {id:"research",label:"Research",color:"#d97706",icon:"🔍"},
+  {id:"personal",label:"Personal",color:"#e91e8c",icon:"🌿"},
+];
+
+const todayStr=()=>new Date().toISOString().slice(0,10);
+const fmtDate=s=>{if(!s)return"—";return new Date(s+"T12:00:00").toLocaleDateString([],{month:"short",day:"numeric",year:"numeric"});};
+const fmtTime=iso=>{try{return new Date(iso).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});}catch{return"";}};
+const daysDiff=s=>{if(!s)return null;const d=new Date(s+"T12:00:00"),n=new Date();n.setHours(0,0,0,0);return Math.round((d-n)/86400000);};
+const uColor=d=>{if(d===null)return"#888";if(d<0)return"#e03e3e";if(d===0)return"#d97706";if(d<=3)return"#b45309";return"#1dac6e";};
+const uLabel=d=>{if(d===null)return"No deadline";if(d<0)return`${Math.abs(d)}d overdue`;if(d===0)return"Due today";if(d===1)return"Due tomorrow";return`${d}d left`;};
+const initials=name=>{if(!name)return"?";return name.split(" ").map(w=>w[0]).slice(0,2).join("").toUpperCase();};
+
+/* ══ TACK LOGO COMPONENT ══ */
+function TackLogo({size="sidebar"}){
+  const s=size==="auth"?{icon:52,name:28,tag:10,desc:11,gap:14}:{icon:42,name:26,tag:9,desc:10,gap:11};
+  return (
+    <div className="tack-logo" style={{gap:s.gap}}>
+      <svg width={s.icon} height={s.icon*1.46} viewBox="0 0 52 76" xmlns="http://www.w3.org/2000/svg" style={{flexShrink:0}}>
+        <defs><filter id="ps2"><feDropShadow dx="0" dy="2" stdDeviation="2.5" floodColor="rgba(59,124,255,0.28)"/></filter></defs>
+        <circle cx="26" cy="26" r="24" fill="#1a1d28" filter="url(#ps2)"/>
+        <circle cx="26" cy="26" r="16" fill="#3b7cff"/>
+        <circle cx="20" cy="20" r="5.5" fill="rgba(255,255,255,0.18)"/>
+        <circle cx="26" cy="26" r="4" fill="#ffffff"/>
+        <line x1="26" y1="49" x2="26" y2="70" stroke="#1a1d28" strokeWidth="5" strokeLinecap="round"/>
+        <line x1="18" y1="70" x2="34" y2="70" stroke="#1a1d28" strokeWidth="3.5" strokeLinecap="round"/>
+      </svg>
+      <div>
+        <div className="tack-name" style={{fontSize:s.name}}>Tack</div>
+        <div className="tack-tagline" style={{fontSize:s.tag}}>NOTES · FOLLOW-UPS</div>
+        <div className="tack-descriptor" style={{fontSize:s.desc}}>A custom app for organization</div>
+      </div>
+    </div>
+  );
+}
+
+/* ══ AUTH SCREENS ══ */
+
+/* Login */
+function LoginScreen({onLogin,onGoSignup}){
+  const [email,setEmail]=useState("");
+  const [pass,setPass]=useState("");
+  const [err,setErr]=useState("");
+  const [loading,setLoading]=useState(false);
+
+  const handle=async()=>{
+    if(!email||!pass)return;
+    setLoading(true);setErr("");
+    const{error}=await sb.auth.signInWithPassword({email,password:pass});
+    if(error)setErr(error.message);
+    setLoading(false);
+  };
+
+  return (
+    <div className="auth-wrap">
+      <div className="auth-card">
+        <div className="auth-logo"><TackLogo size="auth"/></div>
+        <div className="auth-title">Welcome back</div>
+        <div className="auth-sub">Sign in to your Tack account</div>
+        {err&&<div className="auth-error">{err}</div>}
+        <div className="auth-field"><label className="auth-label">Email Address</label><input className="auth-input" type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@company.com" onKeyDown={e=>e.key==="Enter"&&handle()}/></div>
+        <div className="auth-field"><label className="auth-label">Password</label><input className="auth-input" type="password" value={pass} onChange={e=>setPass(e.target.value)} placeholder="Your password" onKeyDown={e=>e.key==="Enter"&&handle()}/></div>
+        <button className="auth-btn" onClick={handle} disabled={!email||!pass||loading}>{loading?"Signing in…":"Sign In"}</button>
+        <div className="auth-footer">
+          <span>Don't have an account?</span>
+          <button className="auth-link" onClick={onGoSignup}>Request access</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* Signup — 3 step flow */
+function SignupScreen({onGoLogin}){
+  const [step,setStep]=useState(1);
+  const [email,setEmail]=useState("");
+  const [pass,setPass]=useState("");
+  const [pass2,setPass2]=useState("");
+  const [name,setName]=useState("");
+  const [alertEmail,setAlertEmail]=useState("");
+  const [company,setCompany]=useState("");
+  const [selectedFolders,setSelectedFolders]=useState(["meetings","clients","tasks"]);
+  const [err,setErr]=useState("");
+  const [loading,setLoading]=useState(false);
+  const [done,setDone]=useState(false);
+
+  const toggleFolder=id=>setSelectedFolders(p=>p.includes(id)?p.filter(x=>x!==id):[...p,id]);
+
+  const handleStep1=()=>{
+    if(!email||!pass)return;
+    if(pass!==pass2){setErr("Passwords do not match");return;}
+    if(pass.length<8){setErr("Password must be at least 8 characters");return;}
+    setErr("");setStep(2);
+  };
+
+  const handleStep2=()=>{
+    if(!name){setErr("Please enter your name");return;}
+    setErr("");setStep(3);
+  };
+
+  const handleSubmit=async()=>{
+    setLoading(true);setErr("");
+    const folders=DEFAULT_FOLDER_OPTIONS.filter(f=>selectedFolders.includes(f.id));
+    const{data,error}=await sb.auth.signUp({
+      email,password:pass,
+      options:{data:{full_name:name,alert_email:alertEmail||email,company,folders:JSON.stringify(folders)}}
+    });
+    if(error){setErr(error.message);setLoading(false);return;}
+    if(data.user){
+      await sb.from("profiles").upsert({
+        id:data.user.id,full_name:name,alert_email:alertEmail||email,
+        company,status:"pending",role:"user",
+      });
+    }
+    setDone(true);setLoading(false);
+  };
+
+  if(done) return (
+    <div className="auth-wrap">
+      <div className="auth-card" style={{textAlign:"center"}}>
+        <div style={{fontSize:52,marginBottom:16}}>✅</div>
+        <div className="auth-title">Account created!</div>
+        <div className="auth-sub">Your account is pending approval by the administrator. You'll be able to sign in once approved — this usually takes less than 24 hours.</div>
+        <button className="auth-btn" onClick={onGoLogin} style={{marginTop:8}}>Back to Sign In</button>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="auth-wrap">
+      <div className="auth-card">
+        <div className="auth-logo"><TackLogo size="auth"/></div>
+        <div className="auth-step-indicator">
+          {[1,2,3].map(s=><div key={s} className={`auth-step${step===s?" active":step>s?" done":""}`}/>)}
+        </div>
+
+        {step===1&&<>
+          <div className="auth-title">Create your account</div>
+          <div className="auth-sub">Step 1 of 3 — Set up your login credentials</div>
+          {err&&<div className="auth-error">{err}</div>}
+          <div className="auth-field"><label className="auth-label">Email Address</label><input className="auth-input" type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@company.com"/></div>
+          <div className="auth-field"><label className="auth-label">Password</label><input className="auth-input" type="password" value={pass} onChange={e=>setPass(e.target.value)} placeholder="At least 8 characters"/></div>
+          <div className="auth-field"><label className="auth-label">Confirm Password</label><input className="auth-input" type="password" value={pass2} onChange={e=>setPass2(e.target.value)} placeholder="Repeat your password" onKeyDown={e=>e.key==="Enter"&&handleStep1()}/></div>
+          <button className="auth-btn" onClick={handleStep1} disabled={!email||!pass||!pass2}>Continue →</button>
+        </>}
+
+        {step===2&&<>
+          <div className="auth-title">About you</div>
+          <div className="auth-sub">Step 2 of 3 — Your details and alert preferences</div>
+          {err&&<div className="auth-error">{err}</div>}
+          <div className="auth-field"><label className="auth-label">Full Name</label><input className="auth-input" value={name} onChange={e=>setName(e.target.value)} placeholder="e.g. Jason Lawrence" autoFocus/></div>
+          <div className="auth-field"><label className="auth-label">Company / Organization</label><input className="auth-input" value={company} onChange={e=>setCompany(e.target.value)} placeholder="e.g. Acme Corp"/></div>
+          <div className="auth-field"><label className="auth-label">Alert Email <span style={{color:"var(--text3)",fontWeight:400}}>(where to send overdue reminders)</span></label><input className="auth-input" type="email" value={alertEmail} onChange={e=>setAlertEmail(e.target.value)} placeholder={email||"your@email.com"}/></div>
+          <div style={{display:"flex",gap:10}}>
+            <button className="btn-secondary" style={{flex:1}} onClick={()=>setStep(1)}>← Back</button>
+            <button className="auth-btn" style={{flex:2,margin:0}} onClick={handleStep2} disabled={!name}>Continue →</button>
+          </div>
+        </>}
+
+        {step===3&&<>
+          <div className="auth-title">Choose your folders</div>
+          <div className="auth-sub">Step 3 of 3 — Select the folders you want to start with. You can add or change these later.</div>
+          {err&&<div className="auth-error">{err}</div>}
+          <div className="folder-picker" style={{marginBottom:20}}>
+            {DEFAULT_FOLDER_OPTIONS.map(f=>(
+              <div key={f.id} className={`folder-pick-row${selectedFolders.includes(f.id)?" selected":""}`} onClick={()=>toggleFolder(f.id)}>
+                <div className="folder-pick-check">{selectedFolders.includes(f.id)?"✓":""}</div>
+                <span style={{fontSize:18}}>{f.icon}</span>
+                <span style={{fontSize:15,fontWeight:600,color:selectedFolders.includes(f.id)?f.color:"var(--text)"}}>{f.label}</span>
+              </div>
+            ))}
+          </div>
+          <div style={{display:"flex",gap:10}}>
+            <button className="btn-secondary" style={{flex:1}} onClick={()=>setStep(2)}>← Back</button>
+            <button className="auth-btn" style={{flex:2,margin:0}} onClick={handleSubmit} disabled={loading||selectedFolders.length===0}>{loading?"Creating account…":"Create Account →"}</button>
+          </div>
+        </>}
+
+        <div className="auth-footer">
+          <span>Already have an account?</span>
+          <button className="auth-link" onClick={onGoLogin}>Sign in</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* Pending approval screen */
+function PendingScreen({onSignOut}){
+  return (
+    <div className="pending-wrap">
+      <div className="pending-card">
+        <div className="pending-icon">⏳</div>
+        <div className="pending-title">Awaiting Approval</div>
+        <div className="pending-sub">Your account has been created and is waiting for administrator approval. You'll be notified by email once you've been approved — this usually takes less than 24 hours.</div>
+        <button className="btn-secondary" onClick={onSignOut} style={{width:"100%"}}>Sign Out</button>
+      </div>
+    </div>
+  );
+}
+
+/* ══ HELPER COMPONENTS ══ */
+
+function CatPill({cat,selected,onClick}){
+  return <button className="cat-pill" onClick={onClick} style={{background:selected?cat.color:"rgba(0,0,0,0.04)",borderColor:selected?cat.color:"rgba(0,0,0,0.1)",color:selected?"#fff":"rgba(26,29,36,0.6)",fontWeight:selected?700:400,boxShadow:selected?`0 2px 10px ${cat.color}44`:"none"}}>{cat.icon} {cat.label}</button>;
+}
+
+function FUBadge({fu,myName,onToggle,readOnly}){
+  const days=daysDiff(fu.deadline),col=uColor(days);
+  const isMe=myName&&fu.person&&fu.person.toLowerCase().includes(myName.toLowerCase());
+  return (
+    <div className="fu-badge" style={{background:fu.done?"rgba(0,0,0,0.02)":`${col}10`,border:`1px solid ${fu.done?"rgba(0,0,0,0.06)":col+"40"}`,opacity:fu.done?0.5:1}}>
+      <div className="fu-check" onClick={()=>!readOnly&&onToggle&&onToggle(fu.id)} style={{borderColor:fu.done?col:"rgba(0,0,0,0.2)",background:fu.done?col:"transparent",color:"#fff",cursor:readOnly?"default":"pointer"}}>{fu.done?"✓":""}</div>
+      <span className="fu-text" style={{color:fu.done?"rgba(26,29,36,0.4)":"rgba(26,29,36,0.85)",textDecoration:fu.done?"line-through":"none"}}>{fu.item}</span>
+      {fu.person&&<span className="fu-person" style={{background:isMe?"rgba(59,124,255,0.1)":"rgba(0,0,0,0.05)",border:`1px solid ${isMe?"rgba(59,124,255,0.25)":"rgba(0,0,0,0.08)"}`,color:isMe?"var(--accent)":"var(--text2)",fontWeight:isMe?700:400}}>👤 {isMe?"Me":fu.person}</span>}
+      {fu.deadline&&<span className="fu-deadline" style={{color:fu.done?"var(--text3)":col,background:fu.done?"transparent":`${col}12`,border:`1px solid ${fu.done?"transparent":col+"30"}`}}>{uLabel(days)}</span>}
+    </div>
+  );
+}
+
+function FURow({fu,idx,onChange,onRemove}){
+  return (
+    <div className="fu-row">
+      <div className="form-field flex2" style={{minWidth:150}}><label className="field-label">Action Item</label><input className="field-input" value={fu.item} onChange={e=>onChange(idx,"item",e.target.value)} placeholder="What needs to be done…"/></div>
+      <div className="form-field flex1" style={{minWidth:110}}><label className="field-label">Person</label><input className="field-input" value={fu.person} onChange={e=>onChange(idx,"person",e.target.value)} placeholder="Name…"/></div>
+      <div className="form-field flex1" style={{minWidth:130}}><label className="field-label">Deadline</label><input type="date" className="field-input" value={fu.deadline} onChange={e=>onChange(idx,"deadline",e.target.value)}/></div>
+      <button onClick={()=>onRemove(idx)} style={{background:"rgba(224,62,62,0.08)",border:"1px solid rgba(224,62,62,0.2)",borderRadius:8,color:"rgba(224,62,62,0.8)",width:34,height:34,fontSize:15,flexShrink:0,alignSelf:"flex-end",display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+    </div>
+  );
+}
+
+/* ══ FOLDER MODAL ══ */
+function FolderModal({folder,onSave,onClose}){
+  const isNew=!folder?.id;
+  const [label,setLabel]=useState(folder?.label||"");
+  const [color,setColor]=useState(folder?.color||FOLDER_COLORS[0]);
+  const [icon,setIcon]=useState(folder?.icon||FOLDER_ICONS[0]);
+  const ok=label.trim().length>0;
+  return (
+    <div className="overlay" onClick={e=>e.target===e.currentTarget&&onClose()}>
+      <div className="modal modal-sm">
+        <div className="modal-header">
+          <div><div className="modal-title">{isNew?"New Folder":"Edit Folder"}</div><div className="modal-sub">Name, icon and color</div></div>
+          <button className="modal-close" onClick={onClose}>✕</button>
+        </div>
+        <div className="modal-body">
+          <div style={{background:"var(--bg2)",border:"1px solid var(--border)",borderRadius:10,padding:"12px 16px",marginBottom:18,display:"flex",alignItems:"center",gap:10}}>
+            <span style={{fontSize:22}}>{icon}</span>
+            <span style={{fontWeight:700,fontSize:16,color}}>{label||"Folder Name"}</span>
+            <span style={{marginLeft:"auto",background:`${color}18`,border:`1px solid ${color}44`,color,borderRadius:6,padding:"2px 8px",fontSize:11,fontWeight:700,fontFamily:"var(--font-mono)"}}>Preview</span>
+          </div>
+          <div className="form-field"><label className="field-label">Folder Name</label><input className="field-input" value={label} onChange={e=>setLabel(e.target.value)} placeholder="e.g. Board Meetings…" autoFocus/></div>
+          <div className="form-field"><label className="field-label">Icon</label><div className="icon-picker">{FOLDER_ICONS.map(ic=><button key={ic} className={`icon-opt${icon===ic?" sel":""}`} onClick={()=>setIcon(ic)}>{ic}</button>)}</div></div>
+          <div className="form-field" style={{marginBottom:0}}><label className="field-label">Color</label><div className="color-swatches">{FOLDER_COLORS.map(c=><button key={c} className={`color-swatch${color===c?" sel":""}`} onClick={()=>setColor(c)} style={{background:c}}/> )}</div></div>
+        </div>
+        <div className="modal-footer">
+          <button className="btn-secondary" onClick={onClose}>Cancel</button>
+          <button className="btn-primary" onClick={()=>ok&&onSave({label:label.trim(),color,icon})} style={{opacity:ok?1:0.4,cursor:ok?"pointer":"not-allowed"}}>{isNew?"Create Folder":"Save Changes"}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ══ NOTE MODAL ══ */
+function NoteModal({initial,folders,onSave,onClose,myName}){
+  const isEdit=!!initial?.id;
+  const nFU=()=>({id:Date.now().toString()+Math.random(),item:"",person:"",deadline:"",done:false});
+  const [form,setForm]=useState(initial?{...initial,follow_ups:[...(initial.follow_ups||[])]}:{date:todayStr(),people:"",topic:"",body:"",category:folders[0]?.id||"",follow_ups:[]});
+  const bodyRef=useRef(null);
+  useEffect(()=>{setTimeout(()=>{if(bodyRef.current)bodyRef.current.focus();},100);},[]);
+  const sf=(k,v)=>setForm(f=>({...f,[k]:v}));
+  const addFU=()=>setForm(f=>({...f,follow_ups:[...f.follow_ups,nFU()]}));
+  const updFU=(idx,k,v)=>setForm(f=>({...f,follow_ups:f.follow_ups.map((fu,i)=>i===idx?{...fu,[k]:v}:fu)}));
+  const remFU=idx=>setForm(f=>({...f,follow_ups:f.follow_ups.filter((_,i)=>i!==idx)}));
+  const ok=form.body.trim()||form.topic.trim();
+  return (
+    <div className="overlay" onClick={e=>e.target===e.currentTarget&&onClose()}>
+      <div className="modal">
+        <div className="modal-header">
+          <div><div className="modal-title">{isEdit?"Edit Note":"New Note"}</div><div className="modal-sub">{isEdit?`Created ${fmtDate((form.created_at||"").slice(0,10))}`:"All fields optional except notes or topic"}</div></div>
+          <button className="modal-close" onClick={onClose}>✕</button>
+        </div>
+        <div className="modal-body">
+          <div className="form-row">
+            <div className="form-field flex1"><label className="field-label">📅 Date</label><input type="date" className="field-input" value={form.date||""} onChange={e=>sf("date",e.target.value)}/></div>
+            <div className="form-field flex2"><label className="field-label">👤 People Involved</label><input className="field-input" value={form.people||""} onChange={e=>sf("people",e.target.value)} placeholder="e.g. Sarah Chen, Mike Torres…"/></div>
+          </div>
+          <div className="form-field"><label className="field-label">💬 Topic of Discussion</label><input className="field-input" value={form.topic||""} onChange={e=>sf("topic",e.target.value)} placeholder="e.g. Q3 Budget Review…"/></div>
+          <div className="form-field"><label className="field-label">📝 Notes</label><textarea ref={bodyRef} className="field-textarea" value={form.body||""} onChange={e=>sf("body",e.target.value)} placeholder="Write your notes here… (Apple Pencil Scribble or keyboard)"/></div>
+          <div style={{marginBottom:18}}>
+            <div className="fu-header"><label className="field-label" style={{marginBottom:0}}>✅ Follow-ups & To-Dos</label><button className="fu-add-btn" onClick={addFU}>+ Add Item</button></div>
+            {form.follow_ups.length===0?<div className="fu-empty">Tap "+ Add Item" to log follow-up actions and assign deadlines</div>:form.follow_ups.map((fu,idx)=><FURow key={fu.id} fu={fu} idx={idx} onChange={updFU} onRemove={remFU}/>)}
+          </div>
+          <div className="form-field" style={{marginBottom:0}}><label className="field-label">📁 Assign to Folder</label><div className="cat-pills">{folders.map(cat=><CatPill key={cat.id} cat={cat} selected={form.category===cat.id} onClick={()=>sf("category",cat.id)}/>)}</div></div>
+        </div>
+        <div className="modal-footer">
+          <button className="btn-secondary" onClick={onClose}>Cancel</button>
+          <button className="btn-primary" onClick={()=>ok&&onSave({...form,follow_ups:form.follow_ups.filter(fu=>fu.item.trim())})} style={{opacity:ok?1:0.4,cursor:ok?"pointer":"not-allowed"}}>{isEdit?"Save Changes →":"Save Note →"}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ══ SHARE MODAL ══ */
+function ShareModal({note,currentUserId,onClose,showToast}){
+  const [query,setQuery]=useState("");
+  const [results,setResults]=useState([]);
+  const [shares,setShares]=useState([]);
+  const [searching,setSearching]=useState(false);
+
+  useEffect(()=>{loadShares();},[]);
+
+  const loadShares=async()=>{
+    const{data}=await sb.from("note_shares").select("*,profiles!shared_with(full_name,alert_email)").eq("note_id",note.id);
+    setShares(data||[]);
+  };
+
+  const search=async()=>{
+    if(!query.trim())return;
+    setSearching(true);
+    const{data}=await sb.from("profiles").select("id,full_name,alert_email,company").ilike("full_name",`%${query}%`).neq("id",currentUserId).eq("status","approved").limit(5);
+    setResults(data||[]);
+    setSearching(false);
+  };
+
+  const shareWith=async(profile,canEdit=false)=>{
+    const already=shares.find(s=>s.shared_with===profile.id);
+    if(already){showToast("Already shared with this person");return;}
+    await sb.from("note_shares").insert([{note_id:note.id,shared_by:currentUserId,shared_with:profile.id,can_edit:canEdit}]);
+    showToast(`✓ Shared with ${profile.full_name}`);
+    loadShares();setResults([]);setQuery("");
+  };
+
+  const unshare=async(shareId,name)=>{
+    await sb.from("note_shares").delete().eq("id",shareId);
+    showToast(`Removed share with ${name}`);
+    loadShares();
+  };
+
+  return (
+    <div className="overlay" onClick={e=>e.target===e.currentTarget&&onClose()}>
+      <div className="modal modal-md">
+        <div className="modal-header">
+          <div><div className="modal-title">Share Note</div><div className="modal-sub">{note.topic||"Untitled note"}</div></div>
+          <button className="modal-close" onClick={onClose}>✕</button>
+        </div>
+        <div className="modal-body">
+          {/* Search */}
+          <div className="form-field">
+            <label className="field-label">Share with a Tack user</label>
+            <div style={{display:"flex",gap:8}}>
+              <input className="field-input" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search by name…" onKeyDown={e=>e.key==="Enter"&&search()} style={{flex:1}}/>
+              <button className="btn-primary" style={{padding:"11px 18px"}} onClick={search}>{searching?"…":"Search"}</button>
+            </div>
+          </div>
+          {results.length>0&&(
+            <div style={{marginBottom:18,display:"flex",flexDirection:"column",gap:8}}>
+              {results.map(p=>(
+                <div key={p.id} className="user-search-result" onClick={()=>shareWith(p,false)}>
+                  <div className="user-result-avatar">{initials(p.full_name)}</div>
+                  <div style={{flex:1}}>
+                    <div style={{fontWeight:700,fontSize:14,color:"var(--text)"}}>{p.full_name}</div>
+                    <div style={{fontSize:12,color:"var(--text3)"}}>{p.company||p.alert_email}</div>
+                  </div>
+                  <span style={{fontSize:12,color:"var(--accent)",fontWeight:700}}>Share →</span>
+                </div>
+              ))}
+            </div>
+          )}
+          {/* Current shares */}
+          {shares.length>0&&(
+            <div>
+              <label className="field-label">Currently shared with</label>
+              {shares.map(s=>(
+                <div key={s.id} className="shared-with-row">
+                  <div className="user-result-avatar" style={{width:28,height:28,fontSize:11}}>{initials(s.profiles?.full_name)}</div>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:14,fontWeight:700,color:"var(--text)"}}>{s.profiles?.full_name}</div>
+                    <div style={{fontSize:11,color:"var(--text3)"}}>{s.can_edit?"Can edit":"View only"}</div>
+                  </div>
+                  <button onClick={()=>unshare(s.id,s.profiles?.full_name)} style={{background:"rgba(224,62,62,0.08)",border:"1px solid rgba(224,62,62,0.2)",borderRadius:7,color:"var(--red)",fontSize:12,padding:"4px 10px"}}>Remove</button>
+                </div>
+              ))}
+            </div>
+          )}
+          {shares.length===0&&results.length===0&&(
+            <div style={{textAlign:"center",color:"var(--text3)",padding:"20px 0",fontSize:14}}>
+              Search for a Tack user above to share this note with them.<br/>
+              <span style={{fontSize:12,marginTop:4,display:"block"}}>Shared notes are view-only by default.</span>
+            </div>
+          )}
+        </div>
+        <div className="modal-footer"><button className="btn-secondary" onClick={onClose}>Done</button></div>
+      </div>
+    </div>
+  );
+}
+
+/* ══ NOTE CARD ══ */
+function NoteCard({note,folders,onEdit,onDelete,onShare,onToggleFU,myName,isShared}){
+  const cat=folders.find(c=>c.id===note.category)||{color:"#888",icon:"📁",label:"Unknown"};
+  const [expanded,setExpanded]=useState(false);
+  const [showMove,setShowMove]=useState(false);
+  const openFUs=(note.follow_ups||[]).filter(f=>!f.done);
+  const overdue=openFUs.filter(f=>f.deadline&&daysDiff(f.deadline)<0);
+  const isTeams=note.source==="teams";
+  return (
+    <div className={`note-card fade-in${isShared?" shared-card":""}`} style={{borderLeft:`4px solid ${cat.color}`}}>
+      <div className="note-summary" onClick={()=>setExpanded(e=>!e)}>
+        <span className={`note-chevron${expanded?" open":""}`}>▶</span>
+        <div className="note-meta">
+          <div className="note-tags">
+            <span className="tag" style={{background:`${cat.color}15`,border:`1px solid ${cat.color}33`,color:cat.color}}>{cat.icon} {cat.label}</span>
+            {isShared&&<span className="tag" style={{background:"rgba(29,172,110,0.1)",border:"1px solid rgba(29,172,110,0.25)",color:"var(--green)"}}>🔗 Shared with you</span>}
+            {isTeams&&<span className="tag" style={{background:"rgba(59,124,255,0.1)",border:"1px solid rgba(59,124,255,0.25)",color:"var(--accent)"}}>🔵 Teams</span>}
+            {note.date&&<span style={{color:"var(--text3)",fontSize:13,fontFamily:"var(--font-mono)"}}>📅 {fmtDate(note.date)}</span>}
+            {note.people&&<span style={{color:"var(--text3)",fontSize:13}}>👤 {note.people}</span>}
+            {overdue.length>0&&<span className="tag" style={{background:"rgba(224,62,62,0.1)",border:"1px solid rgba(224,62,62,0.25)",color:"var(--red)"}}>⚠ {overdue.length} overdue</span>}
+            {openFUs.length>0&&overdue.length===0&&<span className="tag" style={{background:"rgba(180,83,9,0.08)",border:"1px solid rgba(180,83,9,0.2)",color:"var(--yellow)"}}>⏳ {openFUs.length} open</span>}
+            {note.edited_at&&<span style={{color:"var(--text3)",fontSize:11,fontFamily:"var(--font-mono)"}}>edited {fmtDate(note.edited_at.slice(0,10))}</span>}
+          </div>
+          {note.topic&&<div className="note-topic">{note.topic}</div>}
+          {!expanded&&note.body&&<div className="note-preview">{note.body}</div>}
+        </div>
+        <div className="note-actions">
+          {!isShared&&<button className="btn-icon edit" onClick={e=>{e.stopPropagation();onEdit(note);}}>✎</button>}
+          {!isShared&&<button className="btn-icon share" onClick={e=>{e.stopPropagation();onShare(note);}} title="Share note">🔗</button>}
+          {!isShared&&<button className="btn-icon" style={{background:"rgba(0,0,0,0.04)"}} onClick={e=>{e.stopPropagation();setShowMove(s=>!s);}}>📁</button>}
+          {!isShared&&<button className="btn-icon del" onClick={e=>{e.stopPropagation();onDelete(note);}}>🗑</button>}
+        </div>
+      </div>
+      {expanded&&(
+        <div className="note-body">
+          {note.body&&<div style={{marginBottom:16}}><div className="note-body-label">{isTeams?"Teams AI Summary":"Notes"}</div><div className="note-body-text">{note.body}</div></div>}
+          {(note.follow_ups||[]).length>0&&(
+            <div>
+              <div className="note-body-label">Follow-ups & To-Dos</div>
+              {(note.follow_ups||[]).map(fu=><FUBadge key={fu.id} fu={fu} myName={myName} onToggle={fid=>!isShared&&onToggleFU(note.id,fid)} readOnly={isShared}/>)}
+            </div>
+          )}
+          <div className="note-footer">
+            {isShared?"Shared note · ":""}Created {fmtDate(note.created_at?.slice(0,10))} at {fmtTime(note.created_at)}
+            {note.edited_at&&` · Edited ${fmtDate(note.edited_at.slice(0,10))}`}
+          </div>
+        </div>
+      )}
+      {showMove&&!isShared&&(
+        <div className="move-panel">
+          <span style={{color:"var(--text3)",fontSize:13}}>Move to:</span>
+          {folders.filter(c=>c.id!==note.category).map(c=>(
+            <button key={c.id} onClick={()=>{onEdit({...note,category:c.id,_moveOnly:true});setShowMove(false);}} style={{background:`${c.color}12`,border:`1px solid ${c.color}33`,color:c.color,borderRadius:8,padding:"5px 13px",fontSize:13,fontWeight:600}}>{c.icon} {c.label}</button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ══ ACCOUNTABILITY PANEL ══ */
+function AccountPanel({notes,myName,onToggleFU}){
+  const all=notes.flatMap(n=>(n.follow_ups||[]).map(f=>({...f,noteId:n.id,noteTopic:n.topic})));
+  const isMe=p=>myName&&p&&p.toLowerCase().includes(myName.toLowerCase());
+  const myOpen=all.filter(f=>!f.done&&isMe(f.person));
+  const othOpen=all.filter(f=>!f.done&&f.person&&!isMe(f.person));
+  const Item=({fu})=>{const days=daysDiff(fu.deadline),col=uColor(days);return(
+    <div className="fu-badge" style={{background:`${col}10`,border:`1px solid ${col}40`}}>
+      <div className="fu-check" onClick={()=>onToggleFU(fu.noteId,fu.id)} style={{borderColor:col,background:"transparent",color:"transparent",cursor:"pointer"}}/>
+      <div style={{flex:1,minWidth:0}}><div style={{color:"rgba(26,29,36,0.85)",fontSize:15}}>{fu.item}</div>{fu.noteTopic&&<div style={{color:"var(--text3)",fontSize:11,fontFamily:"var(--font-mono)",marginTop:1}}>from: {fu.noteTopic}</div>}</div>
+      {fu.person&&!isMe(fu.person)&&<span className="fu-person" style={{background:"rgba(0,0,0,0.05)",border:"1px solid rgba(0,0,0,0.08)",color:"var(--text2)"}}>👤 {fu.person}</span>}
+      {fu.deadline&&<span className="fu-deadline" style={{color:col,background:`${col}12`,border:`1px solid ${col}30`}}>{uLabel(days)}</span>}
+    </div>
+  );};
+  const Sec=({title,items,color})=>items.length===0?null:(
+    <div style={{marginBottom:16}}>
+      <div style={{color:color,fontSize:11,fontWeight:700,fontFamily:"var(--font-mono)",letterSpacing:0.5,marginBottom:10,display:"flex",alignItems:"center",gap:6}}>{title}<span style={{background:`${color}18`,border:`1px solid ${color}38`,borderRadius:999,padding:"1px 8px",fontSize:10}}>{items.length}</span></div>
+      {items.map(fu=><Item key={fu.id} fu={fu}/>)}
+    </div>
+  );
+  const myOver=myOpen.filter(f=>f.deadline&&daysDiff(f.deadline)<0);
+  const myToday=myOpen.filter(f=>f.deadline&&daysDiff(f.deadline)===0);
+  const myUp=myOpen.filter(f=>!f.deadline||daysDiff(f.deadline)>0);
+  const oOver=othOpen.filter(f=>f.deadline&&daysDiff(f.deadline)<0);
+  const oToday=othOpen.filter(f=>f.deadline&&daysDiff(f.deadline)===0);
+  const oUp=othOpen.filter(f=>!f.deadline||daysDiff(f.deadline)>0);
+  if(myOpen.length===0&&othOpen.length===0)return <div className="empty-state"><div style={{fontSize:44,opacity:0.3}}>🎉</div><div style={{fontSize:17,color:"var(--text2)"}}>All caught up!</div><div style={{fontSize:14}}>No open follow-ups right now</div></div>;
+  return (
+    <div className="notes-list">
+      {myOpen.length>0&&<div style={{background:"#fff",border:"1px solid var(--border)",borderLeft:"4px solid var(--accent)",borderRadius:"var(--radius)",padding:"18px 20px",boxShadow:"var(--shadow)"}}><div style={{fontFamily:"var(--font-head)",fontSize:17,color:"var(--accent)",marginBottom:14}}>My Action Items</div><Sec title="⚠ OVERDUE" items={myOver} color="#e03e3e"/><Sec title="🔥 DUE TODAY" items={myToday} color="#d97706"/><Sec title="📋 UPCOMING" items={myUp} color="var(--accent)"/></div>}
+      {othOpen.length>0&&<div style={{background:"#fff",border:"1px solid var(--border)",borderRadius:"var(--radius)",padding:"18px 20px",boxShadow:"var(--shadow)"}}><div style={{fontFamily:"var(--font-head)",fontSize:17,color:"var(--text2)",marginBottom:6}}>Others' Follow-ups</div><div style={{color:"var(--text3)",fontSize:13,marginBottom:14}}>Items others committed to — follow up if overdue</div><Sec title="⚠ OVERDUE — FOLLOW UP NOW" items={oOver} color="#e03e3e"/><Sec title="🔥 DUE TODAY" items={oToday} color="#d97706"/><Sec title="📋 UPCOMING" items={oUp} color="#888"/></div>}
+    </div>
+  );
+}
+
+/* ══ ACCOUNT SETTINGS PANEL ══ */
+function AccountSettings({profile,onUpdate,onClose,showToast}){
+  const [editField,setEditField]=useState(null);
+  const [val,setVal]=useState("");
+  const [val2,setVal2]=useState("");
+  const [loading,setLoading]=useState(false);
+
+  const startEdit=(field,current)=>{setEditField(field);setVal(current||"");setVal2("");};
+
+  const saveField=async()=>{
+    setLoading(true);
+    if(editField==="password"){
+      if(val.length<8){showToast("❌ Password must be at least 8 characters");setLoading(false);return;}
+      if(val!==val2){showToast("❌ Passwords do not match");setLoading(false);return;}
+      const{error}=await sb.auth.updateUser({password:val});
+      if(error){showToast("❌ "+error.message);setLoading(false);return;}
+      showToast("✓ Password updated");
+    } else {
+      const update={};
+      if(editField==="full_name")update.full_name=val;
+      if(editField==="alert_email")update.alert_email=val;
+      if(editField==="company")update.company=val;
+      const{error}=await sb.from("profiles").update({...update,updated_at:new Date().toISOString()}).eq("id",profile.id);
+      if(error){showToast("❌ "+error.message);setLoading(false);return;}
+      onUpdate({...profile,...update});
+      showToast("✓ Settings updated");
+    }
+    setEditField(null);setLoading(false);
+  };
+
+  const Row=({label,field,value,type="text"})=>(
+    <div className="settings-row">
+      <div><div className="settings-row-label">{label}</div><div className="settings-row-value">{value||<span style={{color:"var(--text3)",fontStyle:"italic"}}>Not set</span>}</div></div>
+      <button className="settings-edit-btn" onClick={()=>startEdit(field,value)}>Edit</button>
+    </div>
+  );
+
+  return (
+    <div style={{flex:1,overflow:"hidden",display:"flex",flexDirection:"column"}}>
+      <div className="topbar">
+        <div style={{flex:1}}><div className="topbar-title">Account Settings</div><div className="topbar-sub">Manage your profile and preferences</div></div>
+        <button className="btn-secondary" onClick={onClose}>← Back to Notes</button>
+      </div>
+      <div className="settings-panel">
+        <div className="settings-section">
+          <div className="settings-section-title">👤 Profile</div>
+          <Row label="Full Name" field="full_name" value={profile.full_name}/>
+          <Row label="Company / Organization" field="company" value={profile.company}/>
+        </div>
+        <div className="settings-section">
+          <div className="settings-section-title">🔔 Alert Settings</div>
+          <div className="settings-row">
+            <div><div className="settings-row-label">Alert Email</div><div className="settings-row-value">{profile.alert_email||<span style={{color:"var(--text3)",fontStyle:"italic"}}>Not set</span>}</div><div style={{color:"var(--text3)",fontSize:12,marginTop:2}}>Daily overdue reminders sent here Mon–Fri 8am + Fri 5pm</div></div>
+            <button className="settings-edit-btn" onClick={()=>startEdit("alert_email",profile.alert_email)}>Edit</button>
+          </div>
+        </div>
+        <div className="settings-section">
+          <div className="settings-section-title">🔒 Security</div>
+          <div className="settings-row">
+            <div><div className="settings-row-label">Password</div><div className="settings-row-value">••••••••</div></div>
+            <button className="settings-edit-btn" onClick={()=>startEdit("password","")}>Change</button>
+          </div>
+        </div>
+        <div className="settings-section" style={{borderColor:"rgba(224,62,62,0.2)"}}>
+          <div className="settings-section-title" style={{color:"var(--red)"}}>⚠ Danger Zone</div>
+          <div className="settings-row">
+            <div><div className="settings-row-label">Sign Out</div><div className="settings-row-value">Sign out of your Tack account on this device</div></div>
+            <button onClick={()=>sb.auth.signOut()} style={{background:"rgba(224,62,62,0.08)",border:"1px solid rgba(224,62,62,0.2)",borderRadius:8,color:"var(--red)",fontSize:13,fontWeight:700,padding:"6px 14px"}}>Sign Out</button>
+          </div>
+        </div>
+      </div>
+
+      {editField&&(
+        <div className="overlay" onClick={e=>e.target===e.currentTarget&&setEditField(null)}>
+          <div className="modal modal-sm">
+            <div className="modal-header">
+              <div className="modal-title">Edit {editField==="full_name"?"Name":editField==="alert_email"?"Alert Email":editField==="company"?"Company":"Password"}</div>
+              <button className="modal-close" onClick={()=>setEditField(null)}>✕</button>
+            </div>
+            <div className="modal-body">
+              {editField==="password"?(
+                <>
+                  <div className="form-field"><label className="field-label">New Password</label><input type="password" className="field-input" value={val} onChange={e=>setVal(e.target.value)} placeholder="At least 8 characters" autoFocus/></div>
+                  <div className="form-field" style={{marginBottom:0}}><label className="field-label">Confirm New Password</label><input type="password" className="field-input" value={val2} onChange={e=>setVal2(e.target.value)} placeholder="Repeat new password" onKeyDown={e=>e.key==="Enter"&&saveField()}/></div>
+                </>
+              ):(
+                <div className="form-field" style={{marginBottom:0}}>
+                  <label className="field-label">New Value</label>
+                  <input type={editField==="alert_email"?"email":"text"} className="field-input" value={val} onChange={e=>setVal(e.target.value)} autoFocus onKeyDown={e=>e.key==="Enter"&&saveField()}/>
+                </div>
+              )}
+            </div>
+            <div className="modal-footer">
+              <button className="btn-secondary" onClick={()=>setEditField(null)}>Cancel</button>
+              <button className="btn-primary" onClick={saveField} disabled={loading||!val}>{loading?"Saving…":"Save Changes"}</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ══ ADMIN PANEL ══ */
+function AdminPanel({currentUserId,onClose,showToast}){
+  const [users,setUsers]=useState([]);
+  const [inviteEmail,setInviteEmail]=useState("");
+  const [inviteLink,setInviteLink]=useState("");
+  const [loading,setLoading]=useState(true);
+
+  useEffect(()=>{loadUsers();},[]);
+
+  const loadUsers=async()=>{
+    const{data}=await sb.from("profiles").select("*").order("created_at",{ascending:false});
+    setUsers(data||[]);setLoading(false);
+  };
+
+  const approve=async(id,name)=>{
+    await sb.from("profiles").update({status:"approved"}).eq("id",id);
+    showToast(`✓ ${name} approved`);loadUsers();
+  };
+
+  const revoke=async(id,name)=>{
+    await sb.from("profiles").update({status:"pending"}).eq("id",id);
+    showToast(`Access revoked for ${name}`);loadUsers();
+  };
+
+  const generateInvite=()=>{
+    const token=Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2);
+    const link=`${window.location.origin}${window.location.pathname}?invite=${token}`;
+    setInviteLink(link);
+  };
+
+  const copyLink=()=>{
+    navigator.clipboard.writeText(inviteLink).then(()=>showToast("✓ Invite link copied"));
+  };
+
+  return (
+    <div style={{flex:1,overflow:"hidden",display:"flex",flexDirection:"column"}}>
+      <div className="topbar">
+        <div style={{flex:1}}><div className="topbar-title">Admin Panel</div><div className="topbar-sub">Manage users and access</div></div>
+        <button className="btn-secondary" onClick={onClose}>← Back to Notes</button>
+      </div>
+      <div className="settings-panel">
+        {/* Invite section */}
+        <div className="settings-section">
+          <div className="settings-section-title">📨 Invite New Users</div>
+          <p style={{color:"var(--text2)",fontSize:14,marginBottom:14,lineHeight:1.6}}>Generate an invite link and share it with someone. When they sign up, their account will appear below as Pending for you to approve.</p>
+          <button className="btn-primary" onClick={generateInvite} style={{marginBottom:inviteLink?14:0}}>Generate Invite Link</button>
+          {inviteLink&&(
+            <div className="invite-box">
+              <div className="invite-link">{inviteLink}</div>
+              <button className="copy-btn" onClick={copyLink}>Copy</button>
+            </div>
+          )}
+        </div>
+
+        {/* Users table */}
+        <div className="settings-section">
+          <div className="settings-section-title">👥 All Users {users.length>0&&`(${users.length})`}</div>
+          {loading?<div style={{textAlign:"center",color:"var(--text3)",padding:"20px 0"}}>Loading…</div>:(
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Company</th>
+                  <th>Email</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.map(u=>(
+                  <tr key={u.id}>
+                    <td>
+                      <div style={{display:"flex",alignItems:"center",gap:9}}>
+                        <div className="user-result-avatar" style={{width:30,height:30,fontSize:12}}>{initials(u.full_name)}</div>
+                        <div>
+                          <div style={{fontWeight:700}}>{u.full_name||"—"}</div>
+                          {u.id===currentUserId&&<div style={{fontSize:11,color:"var(--accent)",fontFamily:"var(--font-mono)"}}>YOU</div>}
+                        </div>
+                      </div>
+                    </td>
+                    <td style={{color:"var(--text2)"}}>{u.company||"—"}</td>
+                    <td style={{color:"var(--text2)",fontSize:13,fontFamily:"var(--font-mono)"}}>{u.alert_email||"—"}</td>
+                    <td><span className={`status-badge ${u.status==="approved"?"approved":"pending"}`}>{u.status==="approved"?"✓ Approved":"⏳ Pending"}</span></td>
+                    <td>
+                      {u.id!==currentUserId&&(
+                        u.status==="pending"
+                          ?<button className="approve-btn" onClick={()=>approve(u.id,u.full_name)}>Approve</button>
+                          :<button className="revoke-btn" onClick={()=>revoke(u.id,u.full_name)}>Revoke</button>
+                      )}
+                      {u.id===currentUserId&&<span style={{color:"var(--text3)",fontSize:12}}>Admin</span>}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ══ DELETE MODALS ══ */
+function DeleteNoteModal({note,folders,onConfirm,onCancel}){
+  const cat=folders.find(c=>c.id===note.category)||{color:"#888"};
+  return (
+    <div className="overlay" onClick={e=>e.target===e.currentTarget&&onCancel()}>
+      <div className="modal modal-sm">
+        <div className="modal-header" style={{flexDirection:"column",alignItems:"center",textAlign:"center",gap:10}}>
+          <div style={{width:52,height:52,borderRadius:"50%",background:"rgba(224,62,62,0.08)",border:"1px solid rgba(224,62,62,0.2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22}}>🗑</div>
+          <div><div className="modal-title">Delete this note?</div><div className="modal-sub">This cannot be undone</div></div>
+        </div>
+        <div className="modal-body">
+          <div className="delete-preview" style={{borderLeft:`4px solid ${cat.color}`}}>
+            {note.topic&&<div style={{fontWeight:700,fontSize:15,marginBottom:5}}>{note.topic}</div>}
+            <div style={{display:"flex",gap:12}}>{note.date&&<span style={{color:"var(--text3)",fontSize:13}}>📅 {fmtDate(note.date)}</span>}{note.people&&<span style={{color:"var(--text3)",fontSize:13}}>👤 {note.people}</span>}</div>
+            {(note.follow_ups||[]).filter(f=>!f.done).length>0&&<div style={{marginTop:8,color:"var(--yellow)",fontSize:13,background:"rgba(180,83,9,0.08)",border:"1px solid rgba(180,83,9,0.2)",borderRadius:6,padding:"4px 10px",display:"inline-block"}}>⚠ {(note.follow_ups||[]).filter(f=>!f.done).length} open follow-up{(note.follow_ups||[]).filter(f=>!f.done).length>1?"s":""} will also be deleted</div>}
+          </div>
+        </div>
+        <div className="modal-footer"><button className="btn-secondary" onClick={onCancel}>Cancel</button><button className="btn-danger" onClick={onConfirm}>Delete Note</button></div>
+      </div>
+    </div>
+  );
+}
+
+function DeleteFolderModal({folder,noteCount,onConfirm,onCancel}){
+  return (
+    <div className="overlay" onClick={e=>e.target===e.currentTarget&&onCancel()}>
+      <div className="modal modal-sm">
+        <div className="modal-header" style={{flexDirection:"column",alignItems:"center",textAlign:"center",gap:10}}>
+          <div style={{width:52,height:52,borderRadius:"50%",background:"rgba(224,62,62,0.08)",border:"1px solid rgba(224,62,62,0.2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22}}>🗑</div>
+          <div><div className="modal-title">Delete "{folder.label}"?</div><div className="modal-sub">This cannot be undone</div></div>
+        </div>
+        <div className="modal-body">
+          <div className="delete-preview" style={{borderLeft:`4px solid ${folder.color}`}}>
+            <div style={{fontWeight:700,fontSize:15,marginBottom:4}}>{folder.icon} {folder.label}</div>
+            {noteCount>0?<div style={{color:"var(--text2)",fontSize:14}}><strong>{noteCount} note{noteCount>1?"s":""}</strong> will be kept in All Notes.</div>:<div style={{color:"var(--text3)",fontSize:14}}>This folder is empty.</div>}
+          </div>
+        </div>
+        <div className="modal-footer"><button className="btn-secondary" onClick={onCancel}>Cancel</button><button className="btn-danger" onClick={onConfirm}>Delete Folder</button></div>
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════ MAIN APP ══════════════ */
+function App(){
+  const [authState,setAuthState]=useState("loading"); // loading|login|signup|app|pending
+  const [user,setUser]=useState(null);
+  const [profile,setProfile]=useState(null);
+  const [notes,setNotes]=useState([]);
+  const [sharedNotes,setSharedNotes]=useState([]);
+  const [folders,setFolders]=useState([]);
+  const [folder,setFolder]=useState("all");
+  const [view,setView]=useState("notes"); // notes|account|teams|followups|admin
+  const [modal,setModal]=useState(null);
+  const [folderModal,setFolderModal]=useState(null);
+  const [deleteFolderTarget,setDeleteFolderTarget]=useState(null);
+  const [deleteNoteTarget,setDeleteNoteTarget]=useState(null);
+  const [shareTarget,setShareTarget]=useState(null);
+  const [toast,setToast]=useState("");
+  const [sText,setSText]=useState("");
+  const [showDropdown,setShowDropdown]=useState(false);
+
+  const showToast=useCallback(msg=>{setToast(msg);setTimeout(()=>setToast(""),2500);},[]);
+
+  /* Auth listener */
+  useEffect(()=>{
+    sb.auth.getSession().then(({data:{session}})=>{
+      if(session?.user){setUser(session.user);loadProfile(session.user);}
+      else setAuthState("login");
+    });
+    const{data:{subscription}}=sb.auth.onAuthStateChange((_,session)=>{
+      if(session?.user){setUser(session.user);loadProfile(session.user);}
+      else{setUser(null);setProfile(null);setAuthState("login");}
+    });
+    return()=>subscription.unsubscribe();
+  },[]);
+
+  const loadProfile=async(u)=>{
+    const{data}=await sb.from("profiles").select("*").eq("id",u.id).single();
+    if(data){
+      setProfile(data);
+      if(data.status!=="approved"){setAuthState("pending");return;}
+      // Load folders from profile or use defaults
+      let fols=DEFAULT_FOLDER_OPTIONS;
+      try{const stored=u.user_metadata?.folders;if(stored)fols=JSON.parse(stored);}catch{}
+      setFolders(fols);
+      setAuthState("app");
+      fetchNotes(u.id);
+      fetchSharedNotes(u.id);
+    } else {
+      setAuthState("pending");
+    }
+  };
+
+  const fetchNotes=useCallback(async(uid)=>{
+    const id=uid||user?.id;if(!id)return;
+    const{data}=await sb.from("notes").select("*").eq("user_id",id).order("created_at",{ascending:false});
+    setNotes(data||[]);
+  },[user]);
+
+  const fetchSharedNotes=useCallback(async(uid)=>{
+    const id=uid||user?.id;if(!id)return;
+    const{data}=await sb.from("note_shares").select("notes(*)").eq("shared_with",id);
+    setSharedNotes((data||[]).map(d=>d.notes).filter(Boolean));
+  },[user]);
+
+  const handleSaveNote=useCallback(async(form)=>{
+    if(form._moveOnly){
+      const{error}=await sb.from("notes").update({category:form.category,edited_at:new Date().toISOString()}).eq("id",form.id);
+      if(!error){showToast("✓ Note moved");fetchNotes();}
+      return;
+    }
+    const isEdit=notes.some(n=>n.id===form.id);
+    if(isEdit){
+      const{error}=await sb.from("notes").update({date:form.date,people:form.people,topic:form.topic,body:form.body,category:form.category,follow_ups:form.follow_ups,edited_at:new Date().toISOString()}).eq("id",form.id);
+      if(!error){showToast("✓ Note updated");fetchNotes();}else showToast("❌ Error saving");
+    }else{
+      const{error}=await sb.from("notes").insert([{date:form.date,people:form.people,topic:form.topic,body:form.body,category:form.category,follow_ups:form.follow_ups,source:"manual",user_id:user.id}]);
+      if(!error){showToast("✓ Note saved");fetchNotes();}else showToast("❌ Error saving");
+    }
+    setModal(null);
+  },[notes,user,fetchNotes,showToast]);
+
+  const handleToggleFU=useCallback(async(noteId,fuId)=>{
+    const note=notes.find(n=>n.id===noteId);if(!note)return;
+    const upd=(note.follow_ups||[]).map(f=>f.id===fuId?{...f,done:!f.done}:f);
+    await sb.from("notes").update({follow_ups:upd}).eq("id",noteId);
+    setNotes(p=>p.map(n=>n.id!==noteId?n:{...n,follow_ups:upd}));
+  },[notes]);
+
+  const handleDeleteNote=useCallback(async()=>{
+    if(!deleteNoteTarget)return;
+    await sb.from("notes").delete().eq("id",deleteNoteTarget.id);
+    setNotes(p=>p.filter(n=>n.id!==deleteNoteTarget.id));
+    setDeleteNoteTarget(null);showToast("🗑 Note deleted");
+  },[deleteNoteTarget,showToast]);
+
+  const handleSaveFolder=useCallback((data)=>{
+    let updated;
+    if(folderModal==="new"){
+      const id="folder_"+Date.now();
+      updated=[...folders,{id,...data}];
+      showToast(`✓ Folder "${data.label}" created`);
+    }else{
+      updated=folders.map(f=>f.id===folderModal.id?{...f,...data}:f);
+      showToast(`✓ Folder updated`);
+    }
+    setFolders(updated);setFolderModal(null);
+  },[folders,folderModal,showToast]);
+
+  const handleDeleteFolder=useCallback(()=>{
+    if(!deleteFolderTarget)return;
+    setNotes(p=>p.map(n=>n.category===deleteFolderTarget.id?{...n,category:""}:n));
+    setFolders(p=>p.filter(f=>f.id!==deleteFolderTarget.id));
+    if(folder===deleteFolderTarget.id)setFolder("all");
+    showToast(`🗑 Folder "${deleteFolderTarget.label}" deleted`);
+    setDeleteFolderTarget(null);
+  },[deleteFolderTarget,folder,showToast]);
+
+  const allFUs=notes.flatMap(n=>(n.follow_ups||[]).map(f=>({...f})));
+  const openCount=allFUs.filter(f=>!f.done).length;
+  const overdueCount=allFUs.filter(f=>!f.done&&f.deadline&&daysDiff(f.deadline)<0).length;
+  const cc=id=>notes.filter(n=>n.category===id).length;
+  const isAdmin=profile?.role==="admin";
+
+  const filtered=notes.filter(n=>{
+    if(folder==="shared")return false;
+    if(folder!=="all"&&n.category!==folder)return false;
+    if(sText){const q=sText.toLowerCase();const ft=(n.follow_ups||[]).map(f=>`${f.item} ${f.person}`).join(" ");if(![n.body,n.topic,n.people,fmtDate(n.date),ft].some(s=>(s||"").toLowerCase().includes(q)))return false;}
+    return true;
+  });
+  const filteredShared=sharedNotes.filter(n=>{
+    if(folder!=="shared"&&folder!=="all")return false;
+    if(sText){const q=sText.toLowerCase();if(![n.body,n.topic,n.people].some(s=>(s||"").toLowerCase().includes(q)))return false;}
+    return true;
+  });
+
+  /* ── Render auth states ── */
+  if(authState==="loading")return <div style={{height:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"var(--bg2)",fontFamily:"var(--font)",color:"var(--text3)",fontSize:15}}>Loading Tack…</div>;
+  if(authState==="login")return <LoginScreen onLogin={()=>{}} onGoSignup={()=>setAuthState("signup")}/>;
+  if(authState==="signup")return <SignupScreen onGoLogin={()=>setAuthState("login")}/>;
+  if(authState==="pending")return <PendingScreen onSignOut={()=>sb.auth.signOut()}/>;
+
+  /* ── Main app ── */
+  return (
+    <div className="app" onClick={()=>showDropdown&&setShowDropdown(false)}>
+      {/* ══ SIDEBAR ══ */}
+      <div className="sidebar">
+        <div className="sidebar-top"><TackLogo/></div>
+        <div className="sidebar-nav">
+          {/* Main nav */}
+          <button className="nav-btn" style={view==="notes"&&folder==="all"?{background:"rgba(59,124,255,0.1)",color:"var(--accent)",fontWeight:700}:{}} onClick={()=>{setView("notes");setFolder("all");}}>
+            <span>📋 All Notes</span><span>{notes.length}</span>
+          </button>
+          {sharedNotes.length>0&&(
+            <button className="nav-btn" style={folder==="shared"?{background:"rgba(29,172,110,0.1)",color:"var(--green)",fontWeight:700}:{}} onClick={()=>{setView("notes");setFolder("shared");}}>
+              <span>🔗 Shared with Me</span><span>{sharedNotes.length}</span>
+            </button>
+          )}
+          <button className="nav-btn" style={view==="teams"?{background:"rgba(59,124,255,0.1)",color:"var(--accent)",fontWeight:700}:{color:"rgba(26,29,36,0.42)"}} onClick={()=>setView("teams")}>
+            <span>🔵 Teams Inbox</span>
+          </button>
+          <button className="nav-btn" style={view==="followups"?{background:overdueCount>0?"rgba(224,62,62,0.08)":"rgba(180,83,9,0.07)",color:overdueCount>0?"var(--red)":"var(--yellow)",fontWeight:700}:overdueCount>0?{color:"var(--red)",fontWeight:700}:{}} onClick={()=>setView("followups")}>
+            <span>{overdueCount>0?"⚠":"⏳"} Follow-ups</span>
+            {openCount>0&&<span style={{background:overdueCount>0?"rgba(224,62,62,0.15)":"rgba(180,83,9,0.12)",color:overdueCount>0?"var(--red)":"var(--yellow)"}}>{openCount}</span>}
+          </button>
+
+          {/* Folders */}
+          <div className="section-row">
+            <span className="section-label">Folders</span>
+            <button className="add-btn" onClick={()=>setFolderModal("new")} title="New folder">＋</button>
+          </div>
+          {folders.map(cat=>(
+            <div key={cat.id} className={`folder-row${folder===cat.id&&view==="notes"?" active":""}`}>
+              <div className="folder-main" onClick={()=>{setFolder(cat.id);setView("notes");}}>
+                <span style={{fontSize:15}}>{cat.icon}</span>
+                <span className="folder-name" style={folder===cat.id&&view==="notes"?{color:cat.color}:{}}>{cat.label}</span>
+                {cc(cat.id)>0&&<span className="folder-badge" style={folder===cat.id&&view==="notes"?{background:`${cat.color}18`,color:cat.color}:{}}>{cc(cat.id)}</span>}
+              </div>
+              <div className="folder-acts">
+                <button className="fol-btn" onClick={e=>{e.stopPropagation();setFolderModal(cat);}}>✎</button>
+                <button className="fol-btn del" onClick={e=>{e.stopPropagation();setDeleteFolderTarget(cat);}}>🗑</button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Bottom: user box */}
+        <div className="sidebar-bottom">
+          <div style={{position:"relative"}}>
+            <div className="user-box" style={{cursor:"pointer"}} onClick={e=>{e.stopPropagation();setShowDropdown(s=>!s);}}>
+              <div className="user-avatar">{initials(profile?.full_name)}</div>
+              <div style={{flex:1,minWidth:0}}>
+                <div className="user-name">{profile?.full_name||"My Account"}</div>
+                <div className="user-company">{profile?.company||"Tack User"}</div>
+              </div>
+              <button className="user-menu-btn">⋯</button>
+            </div>
+            {showDropdown&&(
+              <div className="dropdown">
+                <button className="dropdown-item" onClick={()=>{setView("account");setShowDropdown(false);}}>⚙ Account Settings</button>
+                {isAdmin&&<button className="dropdown-item" onClick={()=>{setView("admin");setShowDropdown(false);}}>🛡 Admin Panel</button>}
+                <button className="dropdown-item danger" onClick={()=>sb.auth.signOut()}>← Sign Out</button>
+              </div>
+            )}
+          </div>
+          <div className="cloud-badge">
+            <div className="cloud-title">☁ CLOUD + TEAMS SYNC</div>
+            <div className="cloud-sub">Mon–Fri 8am + Fri 5pm alerts</div>
+          </div>
+        </div>
+      </div>
+
+      {/* ══ MAIN CONTENT ══ */}
+      <div className="main">
+        {view==="account"?(
+          <AccountSettings profile={profile} onUpdate={setProfile} onClose={()=>setView("notes")} showToast={showToast}/>
+        ):view==="admin"?(
+          <AdminPanel currentUserId={user?.id} onClose={()=>setView("notes")} showToast={showToast}/>
+        ):view==="followups"?(
+          <>
+            <div className="topbar">
+              <div style={{flex:1}}><div className="topbar-title">Follow-up Accountability</div><div className="topbar-sub">{overdueCount>0?`⚠ ${overdueCount} overdue — email alert at 8am`:openCount>0?`${openCount} open follow-ups`:"All clear"}</div></div>
+              <button className="btn-primary" onClick={()=>setModal("new")}>✏️ New Note</button>
+            </div>
+            <AccountPanel notes={notes} myName={profile?.full_name} onToggleFU={handleToggleFU}/>
+          </>
+        ):view==="teams"?(
+          <>
+            <div className="topbar">
+              <div style={{flex:1}}><div className="topbar-title">🔵 Teams Inbox</div><div className="topbar-sub">Microsoft Teams meeting imports</div></div>
+            </div>
+            <div className="empty-state">
+              <div style={{fontSize:40,opacity:0.3}}>🔵</div>
+              <div style={{fontSize:17,color:"var(--text2)"}}>No Teams meetings yet</div>
+              <div style={{fontSize:14,textAlign:"center",maxWidth:320}}>Once Power Automate is set up, your Teams meeting summaries will appear here automatically.</div>
+            </div>
+          </>
+        ):(
+          <>
+            {/* Notes topbar */}
+            <div className="topbar">
+              <div style={{flex:1}}>
+                <div className="topbar-title">{folder==="all"?"All Notes":folder==="shared"?"Shared with Me":folders.find(c=>c.id===folder)?.label||"All Notes"}</div>
+                <div className="topbar-sub">{folder==="shared"?`${filteredShared.length} shared note${filteredShared.length!==1?"s":""}`:`${filtered.length} note${filtered.length!==1?"s":""}`}</div>
+              </div>
+              <div className="search-wrap">
+                <span style={{fontSize:15,opacity:0.4}}>🔍</span>
+                <input value={sText} onChange={e=>setSText(e.target.value)} placeholder="Search notes…"/>
+                {sText&&<button onClick={()=>setSText("")} style={{background:"none",border:"none",color:"var(--text3)",fontSize:15,padding:0}}>✕</button>}
+              </div>
+              <button className="btn-primary" onClick={()=>setModal("new")}>✏️ New Note</button>
+            </div>
+
+            {/* Notes list */}
+            {folder==="shared"?(
+              filteredShared.length===0?(
+                <div className="empty-state"><div style={{fontSize:44,opacity:0.3}}>🔗</div><div style={{fontSize:17,color:"var(--text2)"}}>No shared notes</div><div style={{fontSize:14}}>Notes others share with you will appear here</div></div>
+              ):(
+                <div className="notes-list">
+                  {filteredShared.map(note=><NoteCard key={note.id} note={note} folders={folders} onEdit={()=>{}} onDelete={()=>{}} onShare={()=>{}} onToggleFU={()=>{}} myName={profile?.full_name} isShared={true}/>)}
+                </div>
+              )
+            ):(
+              filtered.length===0?(
+                <div className="empty-state"><div style={{fontSize:44,opacity:0.3}}>📝</div><div style={{fontSize:17,color:"var(--text2)"}}>No notes found</div><div style={{fontSize:14}}>Tap New Note to get started</div></div>
+              ):(
+                <div className="notes-list">
+                  {filtered.map(note=><NoteCard key={note.id} note={note} folders={folders} onEdit={n=>setModal(n)} onDelete={n=>setDeleteNoteTarget(n)} onShare={n=>setShareTarget(n)} onToggleFU={handleToggleFU} myName={profile?.full_name} isShared={false}/>)}
+                </div>
+              )
+            )}
+          </>
+        )}
+      </div>
+
+      {/* ══ OVERLAYS ══ */}
+      {toast&&<div className="toast">{toast}</div>}
+      {modal&&<NoteModal initial={modal==="new"?null:modal} folders={folders} onSave={handleSaveNote} onClose={()=>setModal(null)} myName={profile?.full_name}/>}
+      {folderModal&&<FolderModal folder={folderModal==="new"?null:folderModal} onSave={handleSaveFolder} onClose={()=>setFolderModal(null)}/>}
+      {deleteFolderTarget&&<DeleteFolderModal folder={deleteFolderTarget} noteCount={cc(deleteFolderTarget.id)} onConfirm={handleDeleteFolder} onCancel={()=>setDeleteFolderTarget(null)}/>}
+      {deleteNoteTarget&&<DeleteNoteModal note={deleteNoteTarget} folders={folders} onConfirm={handleDeleteNote} onCancel={()=>setDeleteNoteTarget(null)}/>}
+      {shareTarget&&<ShareModal note={shareTarget} currentUserId={user?.id} onClose={()=>setShareTarget(null)} showToast={showToast}/>}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
